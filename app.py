@@ -1,7 +1,4 @@
-# app.py
-# ---------------------------------------------------
 # Title: Duplicate Question Detection using Flask API
-# ---------------------------------------------------
 
 import pandas as pd
 import numpy as np
@@ -14,27 +11,19 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 import joblib 
 from flask import Flask, request, jsonify, render_template
-# --- NEW IMPORT ---
 from scipy.sparse import hstack
 
 # --- Global Variables for Model/Vectorizer ---
 MODEL_PATH = 'logistic_model.pkl'
 VECTORIZER_PATH = 'tfidf_vectorizer.pkl'
-# --- NEW: Separate path for numerical features (if needed, but not strictly required here) ---
-# FEATURE_SCALER_PATH = 'feature_scaler.pkl' 
-
-# ---------------------------------------------
 # STEP 1: Download NLTK resources
-# ---------------------------------------------
 try:
     nltk.data.find('corpora/stopwords')
 except nltk.downloader.DownloadError:
     nltk.download('stopwords')
 stop_words = set(stopwords.words('english'))
 
-# ---------------------------------------------
 # STEP 2: Text Cleaning Function
-# ---------------------------------------------
 def clean_text(text):
     """Clean and preprocess the given text"""
     if pd.isna(text) or text is None:
@@ -50,21 +39,11 @@ def calculate_features(q1, q2):
     """Calculates numerical features based on question text."""
     q1_clean = clean_text(q1)
     q2_clean = clean_text(q2)
-    
-    # 1. Length difference
     len_diff = abs(len(q1) - len(q2))
-    
-    # 2. Shared word count (on clean, non-stop word text)
     shared_words = len(set(q1_clean.split()) & set(q2_clean.split()))
-    
-    # Return features and combined text for TF-IDF
     return len_diff, shared_words, q1_clean + " " + q2_clean
 
-
-# ---------------------------------------------
 # STEP 3-7: Modified for Web App
-# ---------------------------------------------
-
 def load_or_train_model():
     """Loads model/vectorizer or trains if files don't exist"""
     try:
@@ -76,10 +55,6 @@ def load_or_train_model():
         return model, tfidf
     except FileNotFoundError:
         print("Saved files not found. Starting full data load and training...")
-        
-        # --- TRAINING CODE (as a backup) ---
-        # NOTE: You MUST change this path to your actual file location!
-        # Make sure this path is CORRECT and accessible:
         file_path =r"D:\python\DuplicateQuestionDetection\train.csv\questions.csv" # Adjusted path based on typical structure
         
         try:
@@ -125,7 +100,6 @@ def load_or_train_model():
 
 # --- Flask App Setup ---
 app = Flask(__name__)
-# Load the model and vectorizer when the app starts
 model, tfidf = load_or_train_model() 
 
 @app.route('/')
@@ -166,11 +140,11 @@ def predict():
         return jsonify(result)
 
     except Exception as e:
-        # In case of an error, logging the traceback is helpful in the terminal
         import traceback
         print(f"Prediction Error: {e}")
         traceback.print_exc()
         return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
+
     app.run(debug=True)
