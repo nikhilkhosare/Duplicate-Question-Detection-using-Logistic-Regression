@@ -1,0 +1,9 @@
+COMPONENT	                    PURPOSE INSTALLATION
+Python	             Core language (Python 3.7+)	(Pre-installed)
+Pandas	             Data loading, manipulation, and feature engineering.	
+NumPy	             Numerical operations and array handling.
+Scikit-learn	     Machine Learning: Provides LogisticRegression, TfidfVectorizer, train_test_split, and metrics.
+NLTK	             Natural Language Processing: Provides stop words for text cleaning.	
+Flask	             Web Framework: Used to create the API and serve the HTML/JS front-end.	
+Joblib	             Model Persistence: Used to save and load the trained model and vectorizer.	
+SciPy	             Sparse Matrix Operations: Specifically needed for hstack to combine TF-IDF (sparse) features with numerical (dense) features.     
