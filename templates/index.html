@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duplicate Question Detector</title>
+    <style>
+        /* CSS for simple styling */
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            resize: vertical;
+            min-height: 80px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            font-size: 18px;
+            text-align: center;
+            font-weight: bold;
+            display: none; /* Hide until prediction */
+        }
+        .duplicate {
+            background-color: #ffe0e0;
+            color: #cc0000;
+            border: 1px solid #cc0000;
+        }
+        .not-duplicate {
+            background-color: #e0ffe0;
+            color: #008000;
+            border: 1px solid #008000;
+        }
+    </style>
+</head>
+<body>
+   
+    <div class="container">
+        <h1>Quora Duplicate Question Detector</h1>
+        <label for="q1">Question 1:</label>
+        <textarea id="q1" placeholder="Enter the first question here..."></textarea>
+        
+        <label for="q2">Question 2:</label>
+        <textarea id="q2" placeholder="Enter the second question here..."></textarea>
+        
+        <button onclick="predictDuplicate()">Check Duplication</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // JavaScript for sending data and handling response
+        async function predictDuplicate() {
+            const q1 = document.getElementById('q1').value;
+            const q2 = document.getElementById('q2').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!q1 || !q2) {
+                resultDiv.className = 'duplicate';
+                resultDiv.innerHTML = "Please enter both questions.";
+                resultDiv.style.display = 'block';
+                return;
+            }
+
+            // Show loading message
+            resultDiv.className = '';
+            resultDiv.innerHTML = "Predicting...";
+            resultDiv.style.display = 'block';
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        question1: q1,
+                        question2: q2
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    const isDuplicate = data.is_duplicate;
+                    const probability = parseFloat(data.probability) * 100;
+                    
+                    if (isDuplicate === 1) {
+                        resultDiv.className = 'duplicate';
+                        resultDiv.innerHTML = `**DUPLICATE** (Confidence: ${probability.toFixed(2)}%)`;
+                    } else {
+                        resultDiv.className = 'not-duplicate';
+                        resultDiv.innerHTML = `**NOT DUPLICATE** (Probability of Duplicate: ${probability.toFixed(2)}%)`;
+                    }
+                } else {
+                    resultDiv.className = 'duplicate';
+                    resultDiv.innerHTML = `Error from server: ${data.error || 'Unknown error'}`;
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                resultDiv.className = 'duplicate';
+                resultDiv.innerHTML = 'An unexpected error occurred during the request.';
+            }
+        }
+    </script>
+</body>
+</html>
